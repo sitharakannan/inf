@@ -13,16 +13,16 @@ import datetime
 class Solver(object):
     """Solver for training and testing StarGAN."""
 
-    def __init__(self, celeba_loader, rafd_loader, config):
+    def __init__(self, celeba_loader, config):
         """Initialize configurations."""
 
         # Data loader.
         self.celeba_loader = celeba_loader
-        self.rafd_loader = rafd_loader
+        #self.rafd_loader = rafd_loader
 
         # Model configurations.
         self.c_dim = config.c_dim
-        self.c2_dim = config.c2_dim
+        #self.c2_dim = config.c2_dim
         self.image_size = config.image_size
         self.g_conv_dim = config.g_conv_dim
         self.d_conv_dim = config.d_conv_dim
@@ -33,7 +33,7 @@ class Solver(object):
         self.lambda_gp = config.lambda_gp
 
         # Training configurations.
-        self.dataset = config.dataset
+        self.dataset = 'CelebA'
         self.batch_size = config.batch_size
         self.num_iters = config.num_iters
         self.num_iters_decay = config.num_iters_decay
@@ -146,6 +146,7 @@ class Solver(object):
         out[np.arange(batch_size), labels.long()] = 1
         return out
 
+    
     def create_labels(self, c_org, c_dim=5, dataset='CelebA', selected_attrs=None):
         """Generate target domain labels for debugging and testing."""
         # Get hair color indices.
@@ -166,12 +167,12 @@ class Solver(object):
                             c_trg[:, j] = 0
                 else:
                     c_trg[:, i] = (c_trg[:, i] == 0)  # Reverse attribute value.
-            elif dataset == 'RaFD':
-                c_trg = self.label2onehot(torch.ones(c_org.size(0))*i, c_dim)
+            #elif dataset == 'RaFD':
+			#	c_trg = self.label2onehot(torch.ones(c_org.size(0))*i, c_dim)
 
             c_trg_list.append(c_trg.to(self.device))
         return c_trg_list
-
+	
     def classification_loss(self, logit, target, dataset='CelebA'):
         """Compute binary or softmax cross entropy loss."""
         if dataset == 'CelebA':
@@ -182,10 +183,11 @@ class Solver(object):
     def train(self):
         """Train StarGAN within a single dataset."""
         # Set data loader.
-        if self.dataset == 'CelebA':
-            data_loader = self.celeba_loader
-        elif self.dataset == 'RaFD':
-            data_loader = self.rafd_loader
+        
+		#if self.dataset == 'CelebA':
+        data_loader = self.celeba_loader
+        #elif self.dataset == 'RaFD':
+        #    data_loader = self.rafd_loader
 
         # Fetch fixed inputs for debugging.
         data_iter = iter(data_loader)
@@ -206,7 +208,7 @@ class Solver(object):
         # Start training.
         print('Start training...')
         start_time = time.time()
-        for i in range(start_iters, self.num_iters):
+        for i in range(start_iters, (self.num_iters)):
 
             # =================================================================================== #
             #                             1. Preprocess input data                                #
@@ -226,9 +228,9 @@ class Solver(object):
             if self.dataset == 'CelebA':
                 c_org = label_org.clone()
                 c_trg = label_trg.clone()
-            elif self.dataset == 'RaFD':
-                c_org = self.label2onehot(label_org, self.c_dim)
-                c_trg = self.label2onehot(label_trg, self.c_dim)
+            #elif self.dataset == 'RaFD':
+            #    c_org = self.label2onehot(label_org, self.c_dim)
+            #    c_trg = self.label2onehot(label_trg, self.c_dim)
 
             x_real = x_real.to(self.device)           # Input images.
             c_org = c_org.to(self.device)             # Original domain labels.
@@ -338,6 +340,7 @@ class Solver(object):
                 self.update_lr(g_lr, d_lr)
                 print ('Decayed learning rates, g_lr: {}, d_lr: {}.'.format(g_lr, d_lr))
 
+    '''
     def train_multi(self):
         """Train StarGAN with multiple datasets."""        
         # Data iterators.
@@ -376,7 +379,7 @@ class Solver(object):
                 
                 # Fetch real images and labels.
                 data_iter = celeba_iter if dataset == 'CelebA' else rafd_iter
-                
+                #i=i/200
                 try:
                     x_real, label_org = next(data_iter)
                 except:
@@ -519,17 +522,17 @@ class Solver(object):
                 d_lr -= (self.d_lr / float(self.num_iters_decay))
                 self.update_lr(g_lr, d_lr)
                 print ('Decayed learning rates, g_lr: {}, d_lr: {}.'.format(g_lr, d_lr))
-
+	'''
     def test(self):
         """Translate images using StarGAN trained on a single dataset."""
         # Load the trained generator.
         self.restore_model(self.test_iters)
         
         # Set data loader.
-        if self.dataset == 'CelebA':
-            data_loader = self.celeba_loader
-        elif self.dataset == 'RaFD':
-            data_loader = self.rafd_loader
+        #if self.dataset == 'CelebA':
+        data_loader = self.celeba_loader
+        #elif self.dataset == 'RaFD':
+        #    data_loader = self.rafd_loader
         
         with torch.no_grad():
             for i, (x_real, c_org) in enumerate(data_loader):
@@ -549,6 +552,7 @@ class Solver(object):
                 save_image(self.denorm(x_concat.data.cpu()), result_path, nrow=1, padding=0)
                 print('Saved real and fake images into {}...'.format(result_path))
 
+    '''
     def test_multi(self):
         """Translate images using StarGAN trained on multiple datasets."""
         # Load the trained generator.
@@ -580,3 +584,5 @@ class Solver(object):
                 result_path = os.path.join(self.result_dir, '{}-images.jpg'.format(i+1))
                 save_image(self.denorm(x_concat.data.cpu()), result_path, nrow=1, padding=0)
                 print('Saved real and fake images into {}...'.format(result_path))
+				
+	'''

@@ -75,15 +75,15 @@ def get_loader(image_dir, attr_path, selected_attrs, crop_size=178, image_size=1
     if mode == 'train':
         transform.append(T.RandomHorizontalFlip())
     transform.append(T.CenterCrop(crop_size))
-    transform.append(T.Resize(image_size))
+    transform.append(T.Resize(image_size))      #Rahul Ethiraj T.Resize
     transform.append(T.ToTensor())
     transform.append(T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
     transform = T.Compose(transform)
 
-    if dataset == 'CelebA':
-        dataset = CelebA(image_dir, attr_path, selected_attrs, transform, mode)
-    elif dataset == 'RaFD':
-        dataset = ImageFolder(image_dir, transform)
+    #if dataset == 'CelebA':
+    dataset = CelebA(image_dir, attr_path, selected_attrs, transform, mode)
+    #elif dataset == 'RaFD':
+    #    dataset = ImageFolder(image_dir, transform)
 
     data_loader = data.DataLoader(dataset=dataset,
                                   batch_size=batch_size,
