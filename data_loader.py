@@ -5,6 +5,7 @@ from PIL import Image
 import torch
 import os
 import random
+import time
 
 
 class CelebA(data.Dataset):
@@ -33,8 +34,8 @@ class CelebA(data.Dataset):
         lines = [line.rstrip() for line in open(self.attr_path, 'r')]
         all_attr_names = lines[1].split()
         for i, attr_name in enumerate(all_attr_names):
-            self.attr2idx[attr_name] = i
-            self.idx2attr[i] = attr_name
+            self.attr2idx[attr_name] = i ##attribute to id###
+            self.idx2attr[i] = attr_name ##id to attribute###
 
         lines = lines[2:]
         random.seed(1234)
@@ -44,6 +45,9 @@ class CelebA(data.Dataset):
             filename = split[0]
             values = split[1:]
 
+            ### Finding all the Images that have the Selected attributes as 1 in the attrb text file ###
+            ### The dataset will then have [filename,label] ->  ['022004.jpg', [True]] ###
+            ### I gus for multiple attributes, the first list elemt will have al files with label for that attrib true, next list element for 2nd attribute with all its labels...###
             label = []
             for attr_name in self.selected_attrs:
                 idx = self.attr2idx[attr_name]
@@ -53,8 +57,9 @@ class CelebA(data.Dataset):
                 self.test_dataset.append([filename, label])
             else:
                 self.train_dataset.append([filename, label])
-
+        #print("TRAIN DATASET : ", len(self.train_dataset)) TRAIN DATASET :  200600
         print('Finished preprocessing the CelebA dataset...')
+
 
     def __getitem__(self, index):
         """Return one image and its corresponding attribute label."""
@@ -68,7 +73,7 @@ class CelebA(data.Dataset):
         return self.num_images
 
 
-def get_loader(image_dir, attr_path, selected_attrs, crop_size=178, image_size=128, 
+def get_loader(image_dir, attr_path, selected_attrs, crop_size=178, image_size=128,
                batch_size=16, dataset='CelebA', mode='train', num_workers=1):
     """Build and return a data loader."""
     transform = []
@@ -80,10 +85,7 @@ def get_loader(image_dir, attr_path, selected_attrs, crop_size=178, image_size=1
     transform.append(T.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)))
     transform = T.Compose(transform)
 
-    #if dataset == 'CelebA':
     dataset = CelebA(image_dir, attr_path, selected_attrs, transform, mode)
-    #elif dataset == 'RaFD':
-    #    dataset = ImageFolder(image_dir, transform)
 
     data_loader = data.DataLoader(dataset=dataset,
                                   batch_size=batch_size,

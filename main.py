@@ -22,34 +22,19 @@ def main(config):
     if not os.path.exists(config.result_dir):
         os.makedirs(config.result_dir)
 
-    # Data loader.
-    #celeba_loader = None
-    #rafd_loader = None
-
-    #if config.dataset in ['CelebA', 'Both']:
     celeba_loader = get_loader(config.celeba_image_dir, config.attr_path, config.selected_attrs,
                                    config.celeba_crop_size, config.image_size, config.batch_size,
                                    'CelebA', config.mode, config.num_workers)
-    '''
-	if config.dataset in ['RaFD', 'Both']:
-        rafd_loader = get_loader(config.rafd_image_dir, None, None,
-                                 config.rafd_crop_size, config.image_size, config.batch_size,
-                                 'RaFD', config.mode, config.num_workers)
-    '''
+
 
     # Solver for training and testing StarGAN.
-    solver = Solver(celeba_loader, config)		#solver = Solver(celeba_loader, rafd_loader, config)
+    solver = Solver(celeba_loader, config)
 
     if config.mode == 'train':
-        #if config.dataset in ['CelebA', 'RaFD']:
         solver.train()
-        #elif config.dataset in ['Both']:
-        #    solver.train_multi()
+
     elif config.mode == 'test':
-        #if config.dataset in ['CelebA', 'RaFD']:
         solver.test()
-        #elif config.dataset in ['Both']:
-        #    solver.test_multi()
 
 
 if __name__ == '__main__':
@@ -68,7 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('--lambda_cls', type=float, default=1, help='weight for domain classification loss')
     parser.add_argument('--lambda_rec', type=float, default=10, help='weight for reconstruction loss')
     parser.add_argument('--lambda_gp', type=float, default=10, help='weight for gradient penalty')
-    
+
     # Training configuration.
     #parser.add_argument('--dataset', type=str, default='CelebA', choices=['CelebA', 'RaFD', 'Both'])
     parser.add_argument('--batch_size', type=int, default=16, help='mini-batch size')
