@@ -29,7 +29,7 @@ class CelebA(data.Dataset):
             self.num_images = len(self.test_dataset)
 
     def preprocess(self):
-        """Preprocess the CelebA attribute file."""
+        """Preprocess the CelebA attribute file.  Train_test split data, attributes extraction"""
         lines = [line.rstrip() for line in open(self.attr_path, 'r')]
         all_attr_names = lines[1].split()
         for i, attr_name in enumerate(all_attr_names):
